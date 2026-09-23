@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Student Directory{% endblock title %}
+{% block nav_students %}active{% endblock nav_students %}
+{% block page_title %}Student Directory & Profiles{% endblock page_title %}
+
+{% block body %}
+<!-- ======= Directory Header & Controls ======= -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3">
+    <div class="mb-2 mb-md-0">
+      <h5 class="mb-0 font-weight-bold" style="color: var(--text-main);">
+        <i class="fa fa-users text-primary mr-2"></i> Enrolled Student Roster
+      </h5>
+      <span class="text-muted small">Total {{ students|length }} student(s) across all departments</span>
+    </div>
+
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <!-- Instant Table Filter -->
+      <div class="search-box-pill mr-2" style="min-width: 280px;">
+        <i class="fa fa-search"></i>
+        <input type="text" id="rosterSearch" class="form-control form-control-sm" placeholder="Filter by roll or student name..." onkeyup="filterRoster()">
+      </div>
+
+      <a href="/admin?tab=student" class="btn btn-gradient-primary btn-sm font-weight-bold px-3 py-2">
+        <i class="fa fa-user-plus mr-1"></i> Enroll Student
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table-modern" id="rosterTable">
+        <thead>
+          <tr>
+            <th>Roll Number</th>
+            <th>Student Name</th>
+            <th>Branch</th>
+            <th>Sem</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th style="min-width: 170px;">Attendance %</th>
+            <th class="text-center" style="width: 140px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in students %}
+          <tr class="roster-row" data-name="{{ item.student.sname|lower }}" data-roll="{{ item.student.rollno|lower }}">
+            <td>
+              <span class="badge badge-light border font-weight-bold text-dark px-2 py-1" style="font-size: 13px;">
+                {{ item.student.rollno }}
+              </span>
+            </td>
+            <td>
+              <span class="avatar-initials">{{ item.student.sname[0]|upper }}</span>
+              <span class="font-weight-bold text-dark">{{ item.student.sname }}</span>
+            </td>
+            <td>
+              <span class="branch-badge {% if item.student.branch == 'CU' %}branch-badge-cu{% elif item.student.branch == 'CS' %}branch-badge-cs{% elif item.student.branch == 'AI' %}branch-badge-ai{% elif item.student.branch == 'MECH' %}branch-badge-mech{% endif %}">
+                {{ item.student.branch }}
+              </span>
+            </td>
+            <td>Sem {{ item.student.sem }}</td>
+            <td class="text-muted small">{{ item.student.email }}</td>
+            <td class="text-muted small">{{ item.student.number }}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="progress flex-grow-1 mr-2" style="height: 10px; border-radius: 5px; background: #e2e8f0;">
+                  <div class="progress-bar" 
+                       role="progressbar" 
+                       style="width: {{ item.stats.percentage }}%; background: {% if item.stats.percentage >= 75 %}var(--success-gradient){% elif item.stats.percentage >= 60 %}var(--warning-gradient){% else %}var(--danger-gradient){% endif %};" 
+                       aria-valuenow="{{ item.stats.percentage }}" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100"></div>
+                </div>
+                <span class="font-weight-bold {% if item.stats.percentage >= 75 %}text-success{% elif item.stats.percentage >= 60 %}text-warning{% else %}text-danger{% endif %}" style="font-size: 13px; min-width: 46px;">
+                  {{ item.stats.percentage }}%
+                </span>
+              </div>
+            </td>
+            <td class="text-center">
+              <a href="/attendance/student/{{ item.student.rollno }}" class="btn btn-sm btn-outline-info font-weight-bold p-1 px-2" style="border-radius: 6px;" title="View Subject Report">
+                <i class="fa fa-pie-chart"></i>
+              </a>
+              <a href="/edit/{{ item.student.id }}" class="btn btn-sm btn-outline-primary font-weight-bold p-1 px-2" style="border-radius: 6px;" title="Edit Student">
+                <i class="fa fa-pencil"></i>
+              </a>
+              <a href="/delete/{{ item.student.id }}" onclick="return confirm('Are you sure you want to delete student {{ item.student.sname }} ({{ item.student.rollno }}) and their attendance history?');" class="btn btn-sm btn-outline-danger font-weight-bold p-1 px-2" style="border-radius: 6px;" title="Delete Student">
+                <i class="fa fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              No students found. <a href="/admin?tab=student" class="text-primary font-weight-bold">Click here to enroll students</a>.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock body %}
+
+{% block script %}
+<script>
+  function filterRoster() {
+    var query = document.getElementById('rosterSearch').value.toLowerCase().trim();
+    var rows = document.querySelectorAll('.roster-row');
+    rows.forEach(function(row) {
+      var name = row.getAttribute('data-name') || '';
+      var roll = row.getAttribute('data-roll') || '';
+      if (!query || name.includes(query) || roll.includes(query)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock script %}
