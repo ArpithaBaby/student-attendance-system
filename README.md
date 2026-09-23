@@ -47,8 +47,8 @@ Designed for colleges and academic departments to manage student enrollments, re
 
 ### 1. Clone the Repository
 ```bash
-git clone <REPOSITORY_URL>
-cd "Student Attendance"
+git clone https://github.com/ArpithaBaby/student-attendance-system.git
+cd student-attendance-system
 ```
 
 ### 2. Set Up Virtual Environment (Recommended)
